@@ -27,11 +27,32 @@ namespace Sieci_Neuronowe_projekt_1
             Dane doAnalizy = new Dane();
             doAnalizy.Wczytaj(sciezkaPliku);
             BasicNetwork siec = UtworzSiec();
+            IMLDataSet dataSet = UczSiec(siec, doAnalizy);
+            
+            for(int i = 0; i < dataSet.Count; i++)
+            {
+                IMLData wynik = siec.Compute(dataSet[i].Input);
+                doAnalizy.wynikoweKlasy[i] = wynik[0];
+            }
+            
+            doAnalizy.EksportujDoPliku(@"F:\Downloads\wyniki.csv");
+        }
 
-            Console.WriteLine("Liczba linii:" + doAnalizy.punktyDanych.GetLength(0));
-            Console.ReadLine();
+        //Wypisuje co 50 wynik w konsoli
+        static void WypiszWKonsoli(Dane dane)
+        {
+            for (int i = 0; i < dane.punktyDanych.GetLength(0); i++)
+            {
+                if (i % 50 == 0)
+                {
+                    Console.WriteLine("Wejscia: X={0:0.00}, Y={1:0.00}, wynik: {2:0.00}, oczekiwany: {3:0.0}", dane.punktyDanych[i][0], dane.punktyDanych[i][1], dane.wynikoweKlasy[i]*2+1.0, dane.klasyPunktow[i][0]*2+1.0);
+                }
+            }
+        }
 
-            IMLDataSet dataSet = new BasicMLDataSet(doAnalizy.punktyDanych, doAnalizy.klasyPunktow);
+        static IMLDataSet UczSiec(BasicNetwork siec, Dane doNauki)
+        {
+            IMLDataSet dataSet = new BasicMLDataSet(doNauki.punktyDanych, doNauki.klasyPunktow);
             IMLTrain train = new Backpropagation(siec, dataSet);
             int iter = 1;
 
@@ -40,38 +61,17 @@ namespace Sieci_Neuronowe_projekt_1
                 train.Iteration();
                 Console.WriteLine("Iteracja #{0} Blad {1:0.0000}", iter, train.Error);
                 iter++;
-            } while (train.Error>=0.02 && iter<100000);
+            } while (train.Error >= 0.02 && iter < 5000);
 
             train.FinishTraining();
-
-            // test the neural network
-            Console.ReadLine();
-            Console.WriteLine("Wyniki:");
-
-            //Wyświetl co 50 wynik
-            int i = 0;
-            foreach (IMLDataPair pair in dataSet)
-            {
-                i++;
-                if (i >= 50)
-                {
-                    IMLData wynik = siec.Compute(pair.Input);
-                    Console.WriteLine("Wejscia: X={0:0.00} , Y={1:0.00} , wynik: {2:0.00}, oczekiwany: {3:0.0}", pair.Input[0] , pair.Input[1] , wynik[0] , pair.Ideal[0]);
-                    i = 0;
-                }
-            }
-            Console.ReadLine();
-
-            doAnalizy.EksportujDoPliku(@"F:\Downloads\wyniki.csv");
+            return dataSet;
         }
-
-        
 
         static BasicNetwork UtworzSiec()
         {
             BasicNetwork network = new BasicNetwork();
             network.AddLayer(new BasicLayer(null, true, 2));
-            network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 25));
+            network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 5));
             network.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 1));
             network.Structure.FinalizeStructure();
             network.Reset();

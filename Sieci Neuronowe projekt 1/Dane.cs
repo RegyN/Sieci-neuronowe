@@ -11,8 +11,12 @@ namespace Sieci_Neuronowe_projekt_1
 {
     class Dane
     {
+        //Dane wejściowe do trenowania sieci
         public double[][] punktyDanych;
         public double[][] klasyPunktow;
+
+        //Wyniki pracy sieci
+        public double[] wynikoweKlasy;
 
         public void Wczytaj(string sciezkaPliku)
         {
@@ -22,6 +26,7 @@ namespace Sieci_Neuronowe_projekt_1
                 {
                     punktyDanych = new double[3000][];
                     klasyPunktow = new double[3000][];
+                    wynikoweKlasy = new double[3000];
                     czytnikCsv.SetDelimiters(new string[] { "," });
                     czytnikCsv.HasFieldsEnclosedInQuotes = true;
                     czytnikCsv.ReadFields();
@@ -56,21 +61,24 @@ namespace Sieci_Neuronowe_projekt_1
         {
             var myExport = new CsvExport(",", false);
 
-            foreach (var item in punktyDanych)
+            for (int i=0; i<3000; i++)
             {
-
+                myExport.AddRow();
+                myExport["x"] = punktyDanych[i][0];
+                myExport["y"] = punktyDanych[i][1];
+                myExport["cls"] = Convert.ToInt32(klasyPunktow[i][0]*2+1.0);
+                if (wynikoweKlasy[i] <= 0.33)
+                    myExport["res"] = 1;
+                else if (wynikoweKlasy[i] <= 0.66)
+                    myExport["res"] = 2;
+                else 
+                    myExport["res"] = 3;
             }
-            myExport.AddRow();
-            myExport["Region"] = "Los Angeles, USA";
-            myExport["Sales"] = 100000;
-            myExport["Date Opened"] = new DateTime(2003, 12, 31);
 
-            myExport.AddRow();
-            myExport["Region"] = "Canberra \"in\" Australia";
-            myExport["Sales"] = 50000;
-            myExport["Date Opened"] = new DateTime(2005, 1, 1, 9, 30, 0);
-
-            myExport.ExportToFile(@"F:\Downloads\Somefile.csv");
+            myExport.ExportToFile(sciezka);
+            Console.WriteLine();
+            Console.WriteLine("Zapisano wyniki do w pliku {0}", sciezka);
+            Console.WriteLine();
         }
     }
 }
