@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="CsvExport.cs" />
     <Compile Include="Dane.cs" />
+    <Compile Include="DaneRegresja.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

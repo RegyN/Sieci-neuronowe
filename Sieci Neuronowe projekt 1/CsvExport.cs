@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -133,7 +134,18 @@ namespace Jitbit.Utils
 					return ((DateTime)value).ToString("yyyy-MM-dd");
 				return ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
 			}
-			string output = value.ToString().Trim();
+            string output;
+            // W tym miejscu zrobi³em œmieciow¹ ³atkê ¿eby zapisywa³ double z . zamiast , i bez cudzys³owiów.
+            if (value is double)
+            {
+                output = String.Format(NumberFormatInfo.InvariantInfo, "{0:###0.0###########################}", (double)value).Trim();
+            }
+            else
+            {
+                output = value.ToString().Trim();
+            }
+            // Koniec œmieciowej ³atki. Oryginalnie by³o:
+            // string output = value .ToString().Trim();
 			if (output.Contains(columnSeparator) || output.Contains("\"") || output.Contains("\n") || output.Contains("\r"))
 				output = '"' + output.Replace("\"", "\"\"") + '"';
 
